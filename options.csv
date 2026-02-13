@@ -1,0 +1,18 @@
+field,value,label,description,input_format
+grade,9,כיתה ט',,
+grade,10,כיתה י',,
+grade,11,כיתה יא',,
+grade,12,כיתה יב',,
+gender,male,זכר,,
+gender,female,נקבה,,
+test_type,2000m,ריצת 2000 מטר,הזן את הזמן בפורמט דקות:שניות (לדוגמה: 8:30),time
+test_type,pullups,מתח,הזן את מספר החזרות שביצעת,count
+test_type,1500m,ריצת 1500 מטר,הזן את הזמן בפורמט דקות:שניות (לדוגמה: 6:30),time
+test_type,3000m,ריצת 3000 מטר,הזן את הזמן בפורמט דקות:שניות (לדוגמה: 12:30),time
+test_type,4x10m,ריצת 4x10 מטר,הזן את הזמן בפורמט שניות (לדוגמה: 12.5),seconds
+test_type,squats,סקוואט,הזן את מספר החזרות שביצעת,count
+test_type,long_jump,קפיצה לרוחק,הזן את המרחק במטרים (לדוגמה: 2.5),decimal
+test_type,plank,פלאנק,הזן את הזמן בשניות (לדוגמה: 90),decimal
+test_type,pushups,שכיבות סמיכה,הזן את מספר החזרות שביצעת,count
+test_type,seat_ups,כפיפות בטן,הזן את מספר החזרות שביצעת,count
+test_type,beep_test,בדיקת ביפ,הזן את הרמה שהגעת אליה (לדוגמה: 8.5),decimal

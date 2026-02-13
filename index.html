@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחשבון ציוני ספורט - בית הספר הריאלי</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>בית הספר הריאלי העברי</h1>
+                <p class="subtitle">מחשבון ציוני ספורט</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="calculator-card">
+                <h2>חישוב ציון מבחן ספורט</h2>
+                <p class="description">מלא את הפרטים למטה כדי לחשב את הציון הסופי שלך במבחני הספורט</p>
+
+                <form id="scoreForm">
+                    <div class="form-group">
+                        <label for="grade">שכבת גיל:</label>
+                        <select id="grade" name="grade" required>
+                            <option value="">בחר שכבה</option>
+                            <option value="9">כיתה ט'</option>
+                            <option value="10">כיתה י'</option>
+                            <option value="11">כיתה יא'</option>
+                            <option value="12">כיתה יב'</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">מגדר:</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">בחר מגדר</option>
+                            <option value="male">זכר</option>
+                            <option value="female">נקבה</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="testType">סוג מבחן:</label>
+                        <select id="testType" name="testType" required>
+                            <option value="">בחר מבחן</option>
+                            <option value="2000m">ריצת 2000 מטר</option>
+                            <option value="pullups">מתח</option>
+                            <option value="1500m">ריצת 1500 מטר</option>
+                            <option value="3000m">ריצת 3000 מטר</option>
+                            <option value="4x10m">ריצת 4x10 מטר</option>
+                            <option value="squats">סקוואט</option>
+                            <option value="long_jump">קפיצה לרוחק</option>
+                            <option value="plank">פלאנק</option>
+                            <option value="pushups">שכיבות סמיכה</option>
+                            <option value="seat_ups">כפיפות בטן</option>
+                            <option value="beep_test">בדיקת ביפ</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="score" id="scoreLabel">תוצאה:</label>
+                        <input type="text" id="score" name="score" placeholder="הזן תוצאה" required>
+                        <span class="help-text" id="helpText">לדוגמה: 8:30 או 20</span>
+                    </div>
+
+                    <button type="submit" class="btn-primary">חשב ציון</button>
+                </form>
+
+                <div id="result" class="result hidden">
+                    <h3>הציון שלך:</h3>
+                    <div class="score-display">
+                        <span id="finalScore" class="final-score">--</span>
+                    </div>
+                    <p id="resultMessage" class="result-message"></p>
+                </div>
+
+                <div id="error" class="error hidden"></div>
+            </div>
+
+            <div class="info-section">
+                <h3>מידע על המבחנים</h3>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4>ריצת 2000 מטר</h4>
+                        <p>הזן את הזמן בפורמט דקות:שניות (לדוגמה: 8:30)</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>מתח</h4>
+                        <p>הזן את מספר החזרות שביצעת</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>ריצת 1500 מטר</h4>
+                        <p>הזן את הזמן בפורמט דקות:שניות (לדוגמה: 6:30)</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>ריצת 3000 מטר</h4>
+                        <p>הזן את הזמן בפורמט דקות:שניות (לדוגמה: 12:30)</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>ריצת 4x10 מטר</h4>
+                        <p>הזן את הזמן בפורמט שניות (לדוגמה: 12.5)</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>סקוואט</h4>
+                        <p>הזן את מספר החזרות שביצעת</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>קפיצה לרוחק</h4>
+                        <p>הזן את המרחק בפורמט מטר (לדוגמה: 2.5)</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>פלאנק</h4>
+                        <p>הזן את הזמן בשניות (לדוגמה: 90)</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>שכיבות סמיכה</h4>
+                        <p>הזן את מספר החזרות שביצעת</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>כפיפות בטן</h4>
+                        <p>הזן את מספר החזרות שביצעת</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>בדיקת ביפ</h4>
+                        <p>הזן את הרמה שהגעת אליה (לדוגמה: 8.5)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 בית הספר הריאלי העברי - חיפה</p>
+        </div>
+    </footer>
+
+    <script src="calculator.js"></script>
+</body>
+</html>
