@@ -441,12 +441,12 @@ function computeFinalScore(studentScore, topScore, bottomScore, inputFormat) {
             // Student is faster than or equal to top score - grade 100
             finalScore = 100;
         } else if (studentScore >= bottomScore) {
-            // Student is slower than or equal to bottom score - grade 55
-            finalScore = 55;
+            // Student is slower than or equal to bottom score - grade 50
+            finalScore = 50;
         } else {
-            // Linear interpolation between top (100) and bottom (55)
+            // Linear interpolation between top (100) and bottom (50)
             const progress = (bottomScore - studentScore) / (bottomScore - topScore);
-            finalScore = 55 + progress * 45;
+            finalScore = 50 + progress * 50;
         }
     } else {
         // For count-based tests: higher is better
@@ -456,16 +456,16 @@ function computeFinalScore(studentScore, topScore, bottomScore, inputFormat) {
             // Student achieved more than or equal to top score - grade 100
             finalScore = 100;
         } else if (studentScore <= bottomScore) {
-            // Student achieved less than or equal to bottom score - grade 55
-            finalScore = 55;
+            // Student achieved less than or equal to bottom score - grade 50
+            finalScore = 50;
         } else {
-            // Linear interpolation between bottom (55) and top (100)
+            // Linear interpolation between bottom (50) and top (100)
             const progress = (studentScore - bottomScore) / (topScore - bottomScore);
-            finalScore = 55 + progress * 45;
+            finalScore = 50 + progress * 50;
         }
     }
 
-    return Math.round(finalScore);
+    return Math.floor(finalScore);
 }
 
 // Display the calculated result
