@@ -181,27 +181,28 @@ function getBenchmarkScores(testType) {
 function getScoreRange(scores) {
     if (scores.length === 0) return 'לא זמין';
 
-    const values = scores.map(s => s.score_for_100);
+    const topValues = scores.map(s => s.top_score);
+    const bottomValues = scores.map(s => s.bottom_score);
 
     // For time-based tests, lower is better
     const testInfo = testInfoData.find(t => t.test_type === scores[0].test_type);
 
     if (testInfo && (testInfo.input_format === 'time' || testInfo.input_format === 'seconds')) {
         // Sort numerically (convert to seconds if needed) - lower is better
-        const sorted = values.sort((a, b) => {
+        const sortedTop = topValues.sort((a, b) => {
             const aVal = testInfo.input_format === 'time' ? parseTimeToSeconds(a) : parseFloat(a);
             const bVal = testInfo.input_format === 'time' ? parseTimeToSeconds(b) : parseFloat(b);
             return aVal - bVal;
         });
-        return `${sorted[0]} - ${sorted[sorted.length - 1]}`;
+        return `ציון 100: ${sortedTop[0]} - ${sortedTop[sortedTop.length - 1]}`;
     } else {
         // For count-based and decimal, higher is better
-        const sorted = values.sort((a, b) => {
+        const sortedTop = topValues.sort((a, b) => {
             const aVal = testInfo && testInfo.input_format === 'decimal' ? parseFloat(a) : parseInt(a);
             const bVal = testInfo && testInfo.input_format === 'decimal' ? parseFloat(b) : parseInt(b);
             return aVal - bVal;
         });
-        return `${sorted[0]} - ${sorted[sorted.length - 1]}`;
+        return `ציון 100: ${sortedTop[0]} - ${sortedTop[sortedTop.length - 1]}`;
     }
 }
 
@@ -383,19 +384,22 @@ function calculateScore(event) {
         return;
     }
 
-    // Parse student score and benchmark
-    let studentScore, benchmarkScore;
+    // Parse student score and benchmarks
+    let studentScore, topScore, bottomScore;
 
     try {
         if (testInfo.input_format === 'time') {
             studentScore = parseTimeToSeconds(scoreInput);
-            benchmarkScore = parseTimeToSeconds(matchingData.score_for_100);
+            topScore = parseTimeToSeconds(matchingData.top_score);
+            bottomScore = parseTimeToSeconds(matchingData.bottom_score);
         } else if (testInfo.input_format === 'seconds' || testInfo.input_format === 'decimal') {
             studentScore = parseFloat(scoreInput);
-            benchmarkScore = parseFloat(matchingData.score_for_100);
+            topScore = parseFloat(matchingData.top_score);
+            bottomScore = parseFloat(matchingData.bottom_score);
         } else { // count
             studentScore = parseInt(scoreInput);
-            benchmarkScore = parseInt(matchingData.score_for_100);
+            topScore = parseInt(matchingData.top_score);
+            bottomScore = parseInt(matchingData.bottom_score);
         }
 
         if (isNaN(studentScore)) {
@@ -408,7 +412,7 @@ function calculateScore(event) {
     }
 
     // Calculate final score
-    const finalScore = computeFinalScore(studentScore, benchmarkScore, testInfo.input_format);
+    const finalScore = computeFinalScore(studentScore, topScore, bottomScore, testInfo.input_format);
 
     // Display result
     displayResult(finalScore, testType);
@@ -425,36 +429,41 @@ function parseTimeToSeconds(timeString) {
     throw new Error('Invalid time format');
 }
 
-// Compute final score based on performance
-function computeFinalScore(studentScore, benchmarkScore, inputFormat) {
+// Compute final score based on performance using linear interpolation
+function computeFinalScore(studentScore, topScore, bottomScore, inputFormat) {
     let finalScore;
 
     if (inputFormat === 'time' || inputFormat === 'seconds') {
         // For time-based tests: lower is better
-        const ratio = studentScore / benchmarkScore;
+        // topScore is the best (fastest), bottomScore is the worst (slowest)
 
-        if (ratio <= 1) {
-            // Student is faster or equal - score above 100
-            finalScore = 100 + (1 - ratio) * 200;
+        if (studentScore <= topScore) {
+            // Student is faster than or equal to top score - grade 100
+            finalScore = 100;
+        } else if (studentScore >= bottomScore) {
+            // Student is slower than or equal to bottom score - grade 55
+            finalScore = 55;
         } else {
-            // Student is slower - score below 100
-            finalScore = 100 - (ratio - 1) * 200;
+            // Linear interpolation between top (100) and bottom (55)
+            const progress = (bottomScore - studentScore) / (bottomScore - topScore);
+            finalScore = 55 + progress * 45;
         }
     } else {
         // For count-based tests: higher is better
-        const ratio = studentScore / benchmarkScore;
+        // topScore is the best (most reps/highest value), bottomScore is the worst
 
-        if (ratio >= 1) {
-            // Student did more or equal - score above 100
-            finalScore = 100 + (ratio - 1) * 100;
+        if (studentScore >= topScore) {
+            // Student achieved more than or equal to top score - grade 100
+            finalScore = 100;
+        } else if (studentScore <= bottomScore) {
+            // Student achieved less than or equal to bottom score - grade 55
+            finalScore = 55;
         } else {
-            // Student did less - score below 100
-            finalScore = 100 - (1 - ratio) * 100;
+            // Linear interpolation between bottom (55) and top (100)
+            const progress = (studentScore - bottomScore) / (topScore - bottomScore);
+            finalScore = 55 + progress * 45;
         }
     }
-
-    // Clamp between 55 and 100
-    finalScore = Math.max(55, Math.min(100, finalScore));
 
     return Math.round(finalScore);
 }
