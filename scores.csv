@@ -1,20 +1,12 @@
 test_type,gender,grade,top_score,bottom_score
-2000m,male,9,7:50,12:50
-2000m,male,10,7:30,12:30
-2000m,male,11,7:19,8:19
-2000m,male,12,7:07,12:07
-2000m,female,9,10:00,19:00
-2000m,female,10,9:50,18:20
-2000m,female,11,9:40,17:38
-2000m,female,12,9:40,17:38
-pullups,male,9,11,2
-pullups,male,10,13,1
-pullups,male,11,16,4
-pullups,male,12,19,2
-pullups,female,9,12,5
-pullups,female,10,14,6
-pullups,female,11,16,7
-pullups,female,12,18,8
+1000m, male, 9, 3:50, 5:50
+1000m, male, 10, 3:45, 10:00
+1000m, male, 11, 3:40, 5:40
+1000m, male , 12, 3:30, 5:30
+1000m, female, 9, 4:50, 8:00
+1000m, female, 10, 4:40, 7:30
+1000m, female, 11, 4:30, 7:00
+1000m, female, 12, 4:20, 6:30
 1500m,male,9,5:50,8:50
 1500m,male,10,5:45,8:45
 1500m,male,11,5:35,8:35
@@ -23,6 +15,14 @@ pullups,female,12,18,8
 1500m,female,10,7:40,14:20
 1500m,female,11,7:30,13:00
 1500m,female,12,7:30,13:00
+2000m,male,9,7:50,12:50
+2000m,male,10,7:30,12:30
+2000m,male,11,7:19,8:19
+2000m,male,12,7:07,12:07
+2000m,female,9,10:00,19:00
+2000m,female,10,9:50,18:20
+2000m,female,11,9:40,17:38
+2000m,female,12,9:40,17:38
 3000m,male,9,12:45,16:00
 3000m,male,10,12:20,15:30
 3000m,male,11,12:00,15:00
@@ -39,30 +39,22 @@ pullups,female,12,18,8
 4x10m,female,10,10.8,12.6
 4x10m,female,11,10.8,12.5
 4x10m,female,12,10.6,12.5
-squats,male,9,34,5
-squats,male,10,34,5
-squats,male,11,34,5
-squats,male,12,34,5
-squats,female,9,34,5
-squats,female,10,34,5
-squats,female,11,34,5
-squats,female,12,34,5
-long_jump,male,9,2.28,1.68
-long_jump,male,10,2.41,1.81
-long_jump,male,11,2.46,1.86
-long_jump,male,12,2.55,1.95
-long_jump,female,9,1.9,1.39
-long_jump,female,10,2.0,1.46
-long_jump,female,11,2.03,1.49
-long_jump,female,12,2.06,1.52
-plank,male,9,230,140
-plank,male,10,250,160
-plank,male,11,270,180
-plank,male,12,290,200
-plank,female,9,160,70
-plank,female,10,180,90
-plank,female,11,200,110
-plank,female,12,220,130
+beep_test,male,9,11.5,4.2
+beep_test,male,10,12.12,4.9
+beep_test,male,11,13.7,5.9
+beep_test,male,12,13.10,6.1
+beep_test,female,9,8.2,2.8
+beep_test,female,10,8.8,3.2
+beep_test,female,11,9.2,3.6
+beep_test,female,12,9.9,4.1
+pullups,male,9,11,2
+pullups,male,10,13,1
+pullups,male,11,16,4
+pullups,male,12,19,2
+pullups,female,9,12,5
+pullups,female,10,14,6
+pullups,female,11,16,7
+pullups,female,12,18,8
 pushups,male,9,50,2
 pushups,male,10,55,5
 pushups,male,11,58,10
@@ -79,22 +71,30 @@ seat_ups,female,9,80,5
 seat_ups,female,10,90,9
 seat_ups,female,11,100,19
 seat_ups,female,12,100,19
-beep_test,male,9,11.5,4.2
-beep_test,male,10,12.12,4.9
-beep_test,male,11,13.7,5.9
-beep_test,male,12,13.10,6.1
-beep_test,female,9,8.2,2.8
-beep_test,female,10,8.8,3.2
-beep_test,female,11,9.2,3.6
-beep_test,female,12,9.9,4.1
-1000m, male, 9, 3:50, 5:50
-1000m, male, 10, 3:45, 10:00
-1000m, male, 11, 3:40, 5:40
-1000m, male , 12, 3:30, 5:30
-1000m, female, 9, 4:50, 8:00
-1000m, female, 10, 4:40, 7:30
-1000m, female, 11, 4:30, 7:00
-1000m, female, 12, 4:20, 6:30
+squats,male,9,34,5
+squats,male,10,34,5
+squats,male,11,34,5
+squats,male,12,34,5
+squats,female,9,34,5
+squats,female,10,34,5
+squats,female,11,34,5
+squats,female,12,34,5
+plank,male,9,230,140
+plank,male,10,250,160
+plank,male,11,270,180
+plank,male,12,290,200
+plank,female,9,160,70
+plank,female,10,180,90
+plank,female,11,200,110
+plank,female,12,220,130
+long_jump,male,9,2.28,1.68
+long_jump,male,10,2.41,1.81
+long_jump,male,11,2.46,1.86
+long_jump,male,12,2.55,1.95
+long_jump,female,9,1.9,1.39
+long_jump,female,10,2.0,1.46
+long_jump,female,11,2.03,1.49
+long_jump,female,12,2.06,1.52
 skipping_rope,male,9,140, 80
 skipping_rope,male,10,140, 80
 skipping_rope,male,11,150, 80
