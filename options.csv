@@ -17,3 +17,4 @@ test_type,pushups,שכיבות סמיכה,הזן את מספר החזרות שב
 test_type,seat_ups,כפיפות בטן,הזן את מספר החזרות שביצעת,count
 test_type,beep_test,בדיקת ביפ,הזן את הרמה שהגעת אליה (לדוגמה: 8.5),decimal
 test_type,1000m,ריצת 1000 מטר,הזן את הזמן בפורמט דקות:שניות (לדוגמה: 4:30),time
+test_type,skipping_rope,קפיצה בחבל,הזן את מספר הקפיצות שביצעת,count
