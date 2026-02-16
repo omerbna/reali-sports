@@ -1,28 +1,28 @@
 test_type,gender,grade,top_score,bottom_score
-2000m,male,9,8:30,10:30
-2000m,male,10,8:15,10:15
-2000m,male,11,8:00,10:00
-2000m,male,12,7:45,9:45
-2000m,female,9,10:00,12:30
-2000m,female,10,9:45,12:15
-2000m,female,11,9:30,12:00
-2000m,female,12,9:15,11:45
-pullups,male,9,15,6
-pullups,male,10,17,7
-pullups,male,11,19,8
-pullups,male,12,21,9
+2000m,male,9,7:50,12:50
+2000m,male,10,7:30,12:30
+2000m,male,11,7:19,8:19
+2000m,male,12,7:07,12:07
+2000m,female,9,10:00,19:00
+2000m,female,10,9:50,18:20
+2000m,female,11,9:40,17:38
+2000m,female,12,9:40,17:38
+pullups,male,9,11,2
+pullups,male,10,13,1
+pullups,male,11,16,4
+pullups,male,12,19,2
 pullups,female,9,12,5
 pullups,female,10,14,6
 pullups,female,11,16,7
 pullups,female,12,18,8
-1500m,male,9,6:30,8:30
-1500m,male,10,6:15,8:15
-1500m,male,11,6:00,8:00
-1500m,male,12,5:45,7:45
-1500m,female,9,7:30,10:00
-1500m,female,10,7:15,9:45
-1500m,female,11,7:00,9:30
-1500m,female,12,6:45,9:15
+1500m,male,9,5:50,8:50
+1500m,male,10,5:45,8:45
+1500m,male,11,5:35,8:35
+1500m,male,12,5:30,7:30
+1500m,female,9,7:54,15:00
+1500m,female,10,7:40,14:20
+1500m,female,11,7:30,13:00
+1500m,female,12,7:30,13:00
 3000m,male,9,12:45,16:00
 3000m,male,10,12:20,15:30
 3000m,male,11,12:00,15:00
@@ -71,14 +71,14 @@ pushups,female,9,15,6
 pushups,female,10,20,8
 pushups,female,11,25,10
 pushups,female,12,30,12
-seat_ups,male,9,35,15
-seat_ups,male,10,40,18
-seat_ups,male,11,45,20
-seat_ups,male,12,50,22
-seat_ups,female,9,30,12
-seat_ups,female,10,35,15
-seat_ups,female,11,40,18
-seat_ups,female,12,45,20
+seat_ups,male,9,70,10
+seat_ups,male,10,100,19
+seat_ups,male,11,100,19
+seat_ups,male,12,100,19
+seat_ups,female,9,80,5
+seat_ups,female,10,90,9
+seat_ups,female,11,100,19
+seat_ups,female,12,100,19
 beep_test,male,9,7.5,4.0
 beep_test,male,10,8.0,4.5
 beep_test,male,11,8.5,5.0
@@ -87,3 +87,11 @@ beep_test,female,9,6.0,3.0
 beep_test,female,10,6.5,3.5
 beep_test,female,11,7.0,4.0
 beep_test,female,12,7.5,4.5
+1000m, male, 9, 3:50, 5:50
+1000m, male, 10, 3:45, 10:00
+1000m, male, 11, 3:40, 5:40
+1000m, male , 12, 3:30, 5:30
+1000m, female, 9, 4:50, 8:00
+1000m, female, 10, 4:40, 7:30
+1000m, female, 11, 4:30, 7:00
+1000m, female, 12, 4:20, 6:30
