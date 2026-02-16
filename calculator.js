@@ -1,5 +1,5 @@
 // Global variables to store data
-let scoresData = [];
+let scoresData = {}; // Now stores data per field
 let optionsData = [];
 let testInfoData = [];
 
@@ -21,13 +21,13 @@ async function initializeApp() {
         buildInfoSection();
 
         // Add event listeners
-        document.getElementById('testType').addEventListener('change', updateScoreInput);
+        document.getElementById('field').addEventListener('change', updateScoreInput);
         document.getElementById('scoreForm').addEventListener('submit', calculateScore);
         document.getElementById('score').addEventListener('input', handleScoreInput);
 
     } catch (error) {
         console.error('Error initializing app:', error);
-        showError('שגיאה בטעינת קבצי הנתונים (CSV). אנא וודא שקבצי options.csv ו-scores.csv נמצאים בתיקייה ונסה שוב.');
+        showError('שגיאה בטעינת קבצי הנתונים (CSV). אנא וודא שקבצי options.csv ו-fields.csv נמצאים בתיקייה ונסה שוב.');
         // Disable the form
         document.getElementById('scoreForm').querySelectorAll('input, select, button').forEach(element => {
             element.disabled = true;
@@ -39,12 +39,9 @@ async function initializeApp() {
 async function loadAllData() {
     await Promise.all([
         loadOptionsData(),
-        loadScoresData()
+        loadFieldsData()
     ]);
     console.log('נתונים נטענו מקבצי CSV');
-
-    // Build testInfoData from optionsData
-    buildTestInfoFromOptions();
 }
 
 // Load options data from CSV
@@ -59,26 +56,37 @@ async function loadOptionsData() {
     }
 }
 
-// Build test info data from options data
-function buildTestInfoFromOptions() {
-    testInfoData = optionsData
-        .filter(opt => opt.field === 'test_type')
-        .map(opt => ({
-            test_type: opt.value,
-            title: opt.label,
-            description: opt.description,
-            input_format: opt.input_format
+// Load fields data from CSV
+async function loadFieldsData() {
+    try {
+        const response = await fetch('fields.csv');
+        const csvText = await response.text();
+        testInfoData = parseCSV(csvText).map(field => ({
+            test_type: field.value,
+            title: field.label,
+            description: field.description,
+            input_format: field.input_format
         }));
+    } catch (error) {
+        console.error('Error loading fields data:', error);
+        throw error;
+    }
 }
 
-// Load scores data from CSV
-async function loadScoresData() {
+// Load scores data for a specific field
+async function loadScoresForField(field) {
+    // Check if already loaded
+    if (scoresData[field]) {
+        return scoresData[field];
+    }
+
     try {
-        const response = await fetch('scores.csv');
+        const response = await fetch(`scores/${field}.csv`);
         const csvText = await response.text();
-        scoresData = parseCSV(csvText);
+        scoresData[field] = parseCSV(csvText);
+        return scoresData[field];
     } catch (error) {
-        console.error('Error loading scores data:', error);
+        console.error(`Error loading scores for ${field}:`, error);
         throw error;
     }
 }
@@ -100,44 +108,58 @@ function parseCSV(csvText) {
 
 // Populate dropdowns from options data
 function populateDropdowns() {
-    // Get unique field types
-    const fields = ['grade', 'gender', 'test_type'];
+    // Populate grade dropdown
+    const gradeSelect = document.getElementById('grade');
+    const gradeOptions = optionsData.filter(opt => opt.field === 'grade');
+    gradeSelect.innerHTML = '<option value="">בחר שכבה</option>';
+    gradeOptions.forEach(option => {
+        const optElement = document.createElement('option');
+        optElement.value = option.value;
+        optElement.textContent = option.label;
+        gradeSelect.appendChild(optElement);
+    });
 
-    fields.forEach(fieldName => {
-        const selectElement = document.getElementById(fieldName === 'test_type' ? 'testType' : fieldName);
-        const fieldOptions = optionsData.filter(opt => opt.field === fieldName);
+    // Populate gender dropdown
+    const genderSelect = document.getElementById('gender');
+    const genderOptions = optionsData.filter(opt => opt.field === 'gender');
+    genderSelect.innerHTML = '<option value="">בחר מגדר</option>';
+    genderOptions.forEach(option => {
+        const optElement = document.createElement('option');
+        optElement.value = option.value;
+        optElement.textContent = option.label;
+        genderSelect.appendChild(optElement);
+    });
 
-        // Clear existing options except the first (placeholder)
-        selectElement.innerHTML = '<option value="">בחר ' +
-            (fieldName === 'grade' ? 'שכבה' :
-             fieldName === 'gender' ? 'מגדר' : 'מבחן') +
-            '</option>';
+    // Populate field dropdown from testInfoData (sorted alphabetically)
+    const fieldSelect = document.getElementById('field');
+    fieldSelect.innerHTML = '<option value="">בחר מבחן</option>';
 
-        // Add options from CSV
-        fieldOptions.forEach(option => {
-            const optElement = document.createElement('option');
-            optElement.value = option.value;
-            optElement.textContent = option.label;
-            selectElement.appendChild(optElement);
-        });
+    // Sort fields alphabetically by title
+    const sortedFields = [...testInfoData].sort((a, b) => a.title.localeCompare(b.title, 'he'));
+
+    sortedFields.forEach(field => {
+        const optElement = document.createElement('option');
+        optElement.value = field.test_type;
+        optElement.textContent = field.title;
+        fieldSelect.appendChild(optElement);
     });
 }
 
-// Build info section from test info data
+// Build info section from field info data
 function buildInfoSection() {
     const infoGrid = document.querySelector('.info-grid');
     infoGrid.innerHTML = '';
 
-    testInfoData.forEach(test => {
+    testInfoData.forEach(field => {
         const infoCard = document.createElement('div');
         infoCard.className = 'info-card';
 
-        // Get benchmark scores for this test
-        const benchmarks = getBenchmarkScores(test.test_type);
+        // Get benchmark scores for this field
+        const benchmarks = getBenchmarkScores(field.test_type);
 
         infoCard.innerHTML = `
-            <h4>${test.title}</h4>
-            <p>${test.description}</p>
+            <h4>${field.title}</h4>
+            <p>${field.description}</p>
             <div class="benchmark-scores">
                 <strong>ציון 100:</strong>
                 ${benchmarks}
@@ -147,79 +169,28 @@ function buildInfoSection() {
     });
 }
 
-// Get benchmark scores for a test type
-function getBenchmarkScores(testType) {
-    const testScores = scoresData.filter(row => row.test_type === testType);
-
-    if (testScores.length === 0) {
-        return '<p>לא זמין</p>';
-    }
-
-    // Group by gender
-    const maleScores = testScores.filter(s => s.gender === 'male');
-    const femaleScores = testScores.filter(s => s.gender === 'female');
-
+// Get benchmark scores for a field
+function getBenchmarkScores(field) {
     let html = '<div class="benchmark-group">';
-
-    if (maleScores.length > 0) {
-        html += '<div class="gender-group"><strong>בנים:</strong> ';
-        const maleRange = getScoreRange(maleScores);
-        html += maleRange + '</div>';
-    }
-
-    if (femaleScores.length > 0) {
-        html += '<div class="gender-group"><strong>בנות:</strong> ';
-        const femaleRange = getScoreRange(femaleScores);
-        html += femaleRange + '</div>';
-    }
-
+    html += '<div class="gender-group"><strong>טווח ציונים:</strong> 50-100</div>';
     html += '</div>';
     return html;
 }
 
-// Get score range (best to lowest across all grades)
-function getScoreRange(scores) {
-    if (scores.length === 0) return 'לא זמין';
-
-    const topValues = scores.map(s => s.top_score);
-    const bottomValues = scores.map(s => s.bottom_score);
-
-    // For time-based tests, lower is better
-    const testInfo = testInfoData.find(t => t.test_type === scores[0].test_type);
-
-    if (testInfo && (testInfo.input_format === 'time' || testInfo.input_format === 'seconds')) {
-        // Sort numerically (convert to seconds if needed) - lower is better
-        const sortedTop = topValues.sort((a, b) => {
-            const aVal = testInfo.input_format === 'time' ? parseTimeToSeconds(a) : parseFloat(a);
-            const bVal = testInfo.input_format === 'time' ? parseTimeToSeconds(b) : parseFloat(b);
-            return aVal - bVal;
-        });
-        return `ציון 100: ${sortedTop[0]} - ${sortedTop[sortedTop.length - 1]}`;
-    } else {
-        // For count-based and decimal, higher is better
-        const sortedTop = topValues.sort((a, b) => {
-            const aVal = testInfo && testInfo.input_format === 'decimal' ? parseFloat(a) : parseInt(a);
-            const bVal = testInfo && testInfo.input_format === 'decimal' ? parseFloat(b) : parseInt(b);
-            return aVal - bVal;
-        });
-        return `ציון 100: ${sortedTop[0]} - ${sortedTop[sortedTop.length - 1]}`;
-    }
-}
-
-// Update score input placeholder based on test type
+// Update score input placeholder based on field
 function updateScoreInput() {
-    const testType = document.getElementById('testType').value;
+    const field = document.getElementById('field').value;
     const scoreInput = document.getElementById('score');
     const helpText = document.getElementById('helpText');
 
-    const testInfo = testInfoData.find(t => t.test_type === testType);
+    const fieldInfo = testInfoData.find(f => f.test_type === field);
 
-    if (testInfo) {
-        // Use the description from test data which includes proper units
-        helpText.textContent = testInfo.description || '';
+    if (fieldInfo) {
+        // Use the description from field data which includes proper units
+        helpText.textContent = fieldInfo.description || '';
 
         // Set placeholder based on format
-        switch(testInfo.input_format) {
+        switch(fieldInfo.input_format) {
             case 'time':
                 scoreInput.placeholder = 'לדוגמה: 8:30';
                 break;
@@ -240,7 +211,7 @@ function updateScoreInput() {
         helpText.textContent = '';
     }
 
-    // Clear the input value when test type changes
+    // Clear the input value when field changes
     scoreInput.value = '';
 }
 
@@ -303,17 +274,17 @@ function validateScoreInput(scoreValue, inputFormat) {
 // Handle real-time score input validation
 function handleScoreInput() {
     const scoreInput = document.getElementById('score');
-    const testType = document.getElementById('testType').value;
+    const field = document.getElementById('field').value;
     const helpText = document.getElementById('helpText');
 
-    // Only validate if test type is selected
-    if (!testType) {
+    // Only validate if field is selected
+    if (!field) {
         scoreInput.classList.remove('invalid');
         return;
     }
 
-    const testInfo = testInfoData.find(t => t.test_type === testType);
-    if (!testInfo) {
+    const fieldInfo = testInfoData.find(f => f.test_type === field);
+    if (!fieldInfo) {
         return;
     }
 
@@ -326,7 +297,7 @@ function handleScoreInput() {
         return;
     }
 
-    const validation = validateScoreInput(value, testInfo.input_format);
+    const validation = validateScoreInput(value, fieldInfo.input_format);
 
     if (!validation.valid) {
         scoreInput.classList.add('invalid');
@@ -338,7 +309,7 @@ function handleScoreInput() {
 }
 
 // Calculate the final score
-function calculateScore(event) {
+async function calculateScore(event) {
     event.preventDefault();
 
     // Hide previous results and errors
@@ -348,58 +319,48 @@ function calculateScore(event) {
     // Get form values
     const grade = document.getElementById('grade').value;
     const gender = document.getElementById('gender').value;
-    const testType = document.getElementById('testType').value;
+    const field = document.getElementById('field').value;
     const scoreInput = document.getElementById('score').value;
 
     // Validate inputs
-    if (!grade || !gender || !testType) {
+    if (!grade || !gender || !field) {
         showError('אנא מלא את כל השדות');
         return;
     }
 
-    // Get test info to determine input format
-    const testInfo = testInfoData.find(t => t.test_type === testType);
+    // Get field info to determine input format
+    const fieldInfo = testInfoData.find(f => f.test_type === field);
 
-    if (!testInfo) {
+    if (!fieldInfo) {
         showError('סוג מבחן לא תקין');
         return;
     }
 
     // Validate score input format
-    const validation = validateScoreInput(scoreInput, testInfo.input_format);
+    const validation = validateScoreInput(scoreInput, fieldInfo.input_format);
     if (!validation.valid) {
         showError(validation.message);
         return;
     }
 
-    // Find matching data in CSV
-    const matchingData = scoresData.find(row =>
-        row.test_type === testType &&
-        row.gender === gender &&
-        row.grade === grade
-    );
-
-    if (!matchingData) {
-        showError('לא נמצאו נתונים עבור הקומבינציה שבחרת');
+    // Load scores for this field
+    let fieldScores;
+    try {
+        fieldScores = await loadScoresForField(field);
+    } catch (error) {
+        showError('שגיאה בטעינת נתוני הציונים למבחן זה');
         return;
     }
 
-    // Parse student score and benchmarks
-    let studentScore, topScore, bottomScore;
-
+    // Parse student score
+    let studentScore;
     try {
-        if (testInfo.input_format === 'time') {
+        if (fieldInfo.input_format === 'time') {
             studentScore = parseTimeToSeconds(scoreInput);
-            topScore = parseTimeToSeconds(matchingData.top_score);
-            bottomScore = parseTimeToSeconds(matchingData.bottom_score);
-        } else if (testInfo.input_format === 'seconds' || testInfo.input_format === 'decimal') {
+        } else if (fieldInfo.input_format === 'seconds' || fieldInfo.input_format === 'decimal') {
             studentScore = parseFloat(scoreInput);
-            topScore = parseFloat(matchingData.top_score);
-            bottomScore = parseFloat(matchingData.bottom_score);
         } else { // count
             studentScore = parseInt(scoreInput);
-            topScore = parseInt(matchingData.top_score);
-            bottomScore = parseInt(matchingData.bottom_score);
         }
 
         if (isNaN(studentScore)) {
@@ -411,11 +372,17 @@ function calculateScore(event) {
         return;
     }
 
-    // Calculate final score
-    const finalScore = computeFinalScore(studentScore, topScore, bottomScore, testInfo.input_format);
+    // Calculate final score using new structure
+    const columnName = `${gender}_grade${grade}`;
+    const finalScore = computeFinalScoreFromTable(studentScore, fieldScores, columnName, fieldInfo.input_format);
+
+    if (finalScore === null) {
+        showError('לא ניתן לחשב ציון עבור התוצאה שהוזנה');
+        return;
+    }
 
     // Display result
-    displayResult(finalScore, testType);
+    displayResult(finalScore, field);
 }
 
 // Convert time string (MM:SS) to seconds
@@ -429,47 +396,64 @@ function parseTimeToSeconds(timeString) {
     throw new Error('Invalid time format');
 }
 
-// Compute final score based on performance using linear interpolation
-function computeFinalScore(studentScore, topScore, bottomScore, inputFormat) {
-    let finalScore;
-
-    if (inputFormat === 'time' || inputFormat === 'seconds') {
-        // For time-based tests: lower is better
-        // topScore is the best (fastest), bottomScore is the worst (slowest)
-
-        if (studentScore <= topScore) {
-            // Student is faster than or equal to top score - grade 100
-            finalScore = 100;
-        } else if (studentScore >= bottomScore) {
-            // Student is slower than or equal to bottom score - grade 50
-            finalScore = 50;
+// Compute final score from the new table structure
+function computeFinalScoreFromTable(studentScore, fieldScores, columnName, inputFormat) {
+    // Convert benchmark values to comparable format
+    const parseBenchmark = (value) => {
+        if (inputFormat === 'time') {
+            return parseTimeToSeconds(value);
         } else {
-            // Linear interpolation between top (100) and bottom (50)
-            const progress = (bottomScore - studentScore) / (bottomScore - topScore);
-            finalScore = 50 + progress * 50;
+            return parseFloat(value);
         }
-    } else {
-        // For count-based tests: higher is better
-        // topScore is the best (most reps/highest value), bottomScore is the worst
+    };
 
-        if (studentScore >= topScore) {
-            // Student achieved more than or equal to top score - grade 100
-            finalScore = 100;
-        } else if (studentScore <= bottomScore) {
-            // Student achieved less than or equal to bottom score - grade 50
-            finalScore = 50;
+    // Check if column exists
+    if (!fieldScores[0] || !(columnName in fieldScores[0])) {
+        return null;
+    }
+
+    // Determine if lower is better (time-based) or higher is better (count/decimal)
+    const lowerIsBetter = inputFormat === 'time' || inputFormat === 'seconds';
+
+    // Find the matching score or interpolate
+    for (let i = 0; i < fieldScores.length; i++) {
+        const row = fieldScores[i];
+        const benchmarkValueStr = row[columnName];
+
+        // Skip if value is 0 or empty (gap in score table)
+        if (!benchmarkValueStr || benchmarkValueStr === '0' || benchmarkValueStr.trim() === '') {
+            continue;
+        }
+
+        const benchmarkValue = parseBenchmark(benchmarkValueStr);
+        const finalScore = parseInt(row.final_score);
+
+        // Skip if parsed value is 0 or NaN
+        if (benchmarkValue === 0 || isNaN(benchmarkValue)) {
+            continue;
+        }
+
+        if (lowerIsBetter) {
+            // For time-based: lower student score = better performance
+            if (studentScore <= benchmarkValue) {
+                // Student performed better than or equal to this benchmark
+                return finalScore;
+            }
         } else {
-            // Linear interpolation between bottom (50) and top (100)
-            const progress = (studentScore - bottomScore) / (topScore - bottomScore);
-            finalScore = 50 + progress * 50;
+            // For count/decimal: higher student score = better performance
+            if (studentScore >= benchmarkValue) {
+                // Student performed better than or equal to this benchmark
+                return finalScore;
+            }
         }
     }
 
-    return Math.floor(finalScore);
+    // If we got here, student scored worse than the lowest benchmark (score 50)
+    return 50;
 }
 
 // Display the calculated result
-function displayResult(finalScore, testType) {
+function displayResult(finalScore, field) {
     const resultDiv = document.getElementById('result');
     const finalScoreSpan = document.getElementById('finalScore');
     const resultMessage = document.getElementById('resultMessage');
