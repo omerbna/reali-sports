@@ -1,0 +1,14 @@
+test_type,label,weight_percent
+2000m,ריצת 2000 מטר,60
+pullups,מתח,20
+1500m,ריצת 1500 מטר,0
+3000m,ריצת 3000 מטר,0
+4x10m,ריצת 4x10 מטר,0
+squats,סקוואט,0
+long_jump,קפיצה לרוחק,0
+plank,פלאנק,0
+pushups,שכיבות סמיכה,0
+seat_ups,כפיפות בטן,20
+beep_test,בדיקת ביפ,0
+1000m,ריצת 1000 מטר,0
+skipping_rope,קפיצה בחבל,0

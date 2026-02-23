@@ -20,6 +20,12 @@
 				width="240"
 				>
             </div>
+            <nav class="main-nav">
+                <ul>
+                    <!-- on index page only show link to finalGrade -->
+                    <li><a href="finalGrade.html">ציון סופי</a></li>
+                </ul>
+            </nav>
         </div>
     </header>
 
@@ -57,7 +63,7 @@
                         <span class="help-text" id="helpText">לדוגמה: 8:30 או 20</span>
                     </div>
 
-                    <button type="submit" class="btn-primary">חשב ציון</button>
+                    <button onclick="calc()" class="btn-primary">חשב ציון</button>
                 </form>
 
                 <div id="result" class="result hidden">
@@ -125,7 +131,7 @@
                     <div class="info-card">
                         <h4>קפיצה בחבל</h4>
                         <p>הזן את מספר הקפיצות שביצעת</p>
-                     </div>
+                    </div>
             </div>
         </div>
     </main>
