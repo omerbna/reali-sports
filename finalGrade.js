@@ -78,7 +78,6 @@ async function loadText(path) {
 document.addEventListener('DOMContentLoaded', async () => {
     // page is specific to 12th grade; use constant rather than selector
     const GRADE = '12';
-    // gender dropdown element
     const genderSelect = document.getElementById('gender');
     const testInputsDiv = document.getElementById('testInputs');
     const form = document.getElementById('finalGradeForm');
@@ -99,7 +98,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const genders = options.filter(o => o.field === 'gender').map(o => ({ value: o.value, label: o.label }));
         // grades are irrelevant here since grade is a constant
         fields = parseCSV(fieldsText).map(f => ({ value: f.value, label: f.label, description: f.description, input_format: f.input_format }));
-        // build gender options for selector
         buildSelectOptions(genderSelect, genders);
 
         weights = parseCSV(weightsText).map(w => ({ test_type: w.test_type || w.value || w.testType, label: w.label, weight: parseFloat(w.weight_percent || w.weight || '0') }));
