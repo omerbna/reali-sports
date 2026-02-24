@@ -1,14 +1,27 @@
-test_type,label,weight_percent
-2000m,ריצת 2000 מטר,60
-pullups,מתח,20
-1500m,ריצת 1500 מטר,0
-3000m,ריצת 3000 מטר,0
-4x10m,ריצת 4x10 מטר,0
-squats,סקוואט,0
-long_jump,קפיצה לרוחק,0
-plank,פלאנק,0
-pushups,שכיבות סמיכה,0
-seat_ups,כפיפות בטן,20
-beep_test,בדיקת ביפ,0
-1000m,ריצת 1000 מטר,0
-skipping_rope,קפיצה בחבל,0
+test_type,label,weight_percent,gender
+2000m,ריצת 2000 מטר,60,boys
+pullups,מתח,20,boys
+1500m,ריצת 1500 מטר,0,boys
+3000m,ריצת 3000 מטר,0,boys
+4x10m,ריצת 4x10 מטר,0,boys
+squats,סקוואט,0,boys
+long_jump,קפיצה לרוחק,0,boys
+plank,פלאנק,0,boys
+pushups,שכיבות סמיכה,0,boys
+seat_ups,כפיפות בטן,20,boys
+beep_test,בדיקת ביפ,0,boys
+1000m,ריצת 1000 מטר,0,boys
+skipping_rope,קפיצה בחבל,0,boys
+2000m,ריצת 2000 מטר,60,girls
+pullups,מתח,0,girls
+1500m,ריצת 1500 מטר,0,girls
+3000m,ריצת 3000 מטר,0,girls
+4x10m,ריצת 4x10 מטר,0,girls
+squats,סקוואט,0,girls
+long_jump,קפיצה לרוחק,0,girls
+plank,פלאנק,0,girls
+pushups,שכיבות סמיכה,20,girls
+seat_ups,כפיפות בטן,20,girls
+beep_test,בדיקת ביפ,0,girls
+1000m,ריצת 1000 מטר,0,girls
+skipping_rope,קפיצה בחבל,0,girls

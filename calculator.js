@@ -172,7 +172,7 @@ function buildInfoSection() {
 // Get benchmark scores for a field
 function getBenchmarkScores(field) {
     let html = '<div class="benchmark-group">';
-    html += '<div class="gender-group"><strong>טווח ציונים:</strong> 50-100</div>';
+    html += '<div class="gender-group"><strong>טווח ציונים:</strong> 40-100</div>';
     html += '</div>';
     return html;
 }
@@ -246,8 +246,8 @@ function validateScoreInput(scoreValue, inputFormat) {
                 return { valid: false, message: 'אנא הזן מספר שלם חיובי (לדוגמה: 20)' };
             }
             const countValue = parseInt(trimmedValue);
-            if (countValue <= 0) {
-                return { valid: false, message: 'המספר חייב להיות גדול מאפס' };
+            if (countValue < 0) {
+                return { valid: false, message: 'המספר לא יכול להיות שלילי' };
             }
             break;
 
@@ -398,7 +398,6 @@ function parseTimeToSeconds(timeString) {
 
 // Compute final score from the new table structure
 function computeFinalScoreFromTable(studentScore, fieldScores, columnName, inputFormat) {
-    // Convert benchmark values to comparable format
     const parseBenchmark = (value) => {
         if (inputFormat === 'time') {
             return parseTimeToSeconds(value);
@@ -407,49 +406,34 @@ function computeFinalScoreFromTable(studentScore, fieldScores, columnName, input
         }
     };
 
-    // Check if column exists
     if (!fieldScores[0] || !(columnName in fieldScores[0])) {
         return null;
     }
 
-    // Determine if lower is better (time-based) or higher is better (count/decimal)
     const lowerIsBetter = inputFormat === 'time' || inputFormat === 'seconds';
 
-    // Find the matching score or interpolate
+    // Loop from top (usually final_score 100) to bottom
     for (let i = 0; i < fieldScores.length; i++) {
-        const row = fieldScores[i];
-        const benchmarkValueStr = row[columnName];
+    const row = fieldScores[i];
+    // .trim() removes hidden spaces that might be in your CSV
+    const benchmarkValueStr = (row[columnName] || '').trim();
 
-        // Skip if value is 0 or empty (gap in score table)
-        if (!benchmarkValueStr || benchmarkValueStr === '0' || benchmarkValueStr.trim() === '') {
-            continue;
-        }
-
-        const benchmarkValue = parseBenchmark(benchmarkValueStr);
-        const finalScore = parseInt(row.final_score);
-
-        // Skip if parsed value is 0 or NaN
-        if (benchmarkValue === 0 || isNaN(benchmarkValue)) {
-            continue;
-        }
-
-        if (lowerIsBetter) {
-            // For time-based: lower student score = better performance
-            if (studentScore <= benchmarkValue) {
-                // Student performed better than or equal to this benchmark
-                return finalScore;
-            }
-        } else {
-            // For count/decimal: higher student score = better performance
-            if (studentScore >= benchmarkValue) {
-                // Student performed better than or equal to this benchmark
-                return finalScore;
-            }
-        }
+    // IMPORTANT: If the cell is empty, skip to the next row (Score 96, 95, etc.)
+    if (benchmarkValueStr === "" || benchmarkValueStr === null) {
+        continue; 
     }
 
-    // If we got here, student scored worse than the lowest benchmark (score 50)
-    return 50;
+    let benchmarkValue = parseFloat(benchmarkValueStr);
+    const finalScore = parseInt(row.final_score);
+
+    // For pushups/pullups (Higher is better)
+    if (studentScore >= benchmarkValue) {
+        return finalScore; // It should stop at 98 if studentScore is 29
+    }
+}
+
+    // Fallback if the student didn't meet even the lowest requirement
+    return 40; 
 }
 
 // Display the calculated result

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ציון סופי - בית הספר הריאלי</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,12 +15,18 @@
             <div class="logo">
                 <h1>בית הספר הריאלי העברי</h1>
                 <p class="subtitle">ציון סופי</p>
+                <a href="index.html">למעבר לעמוד המחשב ציוני ספורט</a>
+<img class="logo-img reali" 
+                src="realiLogo.png"
+                width="200"
+                height="auto"
+                alt="לוגו הריאלי">
+                <img class="logo-img sport"
+                src="sportLogo.png"
+                width="200"
+                height="auto"
+                alt="לוגו ספורט">
             </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="index.html">מחשבון ציוני ספורט</a></li>
-                </ul>
-            </nav>
         </div>
     </header>
 
@@ -48,7 +57,8 @@
 
                 <div id="finalResult" class="result hidden">
                     <h3>הציון הכולל:</h3>
-                    <div class="score-display"><span id="finalGradeValue">--</span></div>
+                    <div class="score-display"><span id="finalGradeValue" class="final-score">--</span></div>
+                    <p id="finalResultMessage" class="result-message"></p>
                 </div>
             </div>
         </div>

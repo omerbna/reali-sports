@@ -42,17 +42,16 @@ function validateScoreInput(scoreValue, inputFormat) {
             const countPattern = /^\d+$/;
             if (!countPattern.test(trimmedValue)) return { valid: false, message: 'אנא הזן מספר שלם חיובי (לדוגמה: 20)' };
             const countValue = parseInt(trimmedValue);
-            if (countValue < 0) return { valid: false, message: 'המספר חייב להיות גדול מאפס' };
+            if (countValue < 0) return { valid: false, message: 'המספר לא יכול להיות שלילי' };
             break;
 
         case 'seconds':
         case 'decimal':
-            const decimalPattern = /^\d+\.?\d*$/;
+            const decimalPattern = /^\d*\.?\d+$/; // allows .5 as well as 12.5
             if (!decimalPattern.test(trimmedValue)) return { valid: false, message: 'אנא הזן מספר חיובי (לדוגמה: 12.5)' };
             const decimalValue = parseFloat(trimmedValue);
-            if (decimalValue <= 0 || isNaN(decimalValue)) return { valid: false, message: 'המספר חייב להיות גדול מאפס' };
+            if (decimalValue < 0 || isNaN(decimalValue)) return { valid: false, message: 'המספר לא יכול להיות שלילי' };
             break;
-
         default:
             return { valid: false, message: 'סוג מבחן לא תקין' };
     }
@@ -86,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const errorDiv = document.getElementById('error');
 
     let fields = [];
-    let weights = [];
+    let allWeights = [];
     try {
         const [optionsText, fieldsText, weightsText] = await Promise.all([
             loadText('options.csv'),
@@ -96,11 +95,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const options = parseCSV(optionsText);
         const genders = options.filter(o => o.field === 'gender').map(o => ({ value: o.value, label: o.label }));
-        // grades are irrelevant here since grade is a constant
-        fields = parseCSV(fieldsText).map(f => ({ value: f.value, label: f.label, description: f.description, input_format: f.input_format }));
+        
+        // 1. Map the fields (for formatting and descriptions)
+        fields = parseCSV(fieldsText).map(f => ({ 
+            value: f.value, 
+            label: f.label, 
+            description: f.description, 
+            input_format: f.input_format 
+        }));
+        
+        // 2. Build the gender dropdown
         buildSelectOptions(genderSelect, genders);
 
-        weights = parseCSV(weightsText).map(w => ({ test_type: w.test_type || w.value || w.testType, label: w.label, weight: parseFloat(w.weight_percent || w.weight || '0') }));
+        // 3. Map weights with the new GENDER column
+        allWeights = parseCSV(weightsText).map(w => ({ 
+            test_type: String(w.test_type || w.value || '').trim(), 
+            label: String(w.label || '').trim(), 
+            weight: parseFloat(w.weight_percent || w.weight || '0'),
+            // This removes spaces AND handles upper/lowercase mismatches
+            gender: String(w.gender || '').toLowerCase().trim() 
+        }));
 
     } catch (err) {
         console.error('Error loading CSVs:', err);
@@ -116,75 +130,78 @@ document.addEventListener('DOMContentLoaded', async () => {
         try { alert(message); } catch (e) { /* ignore if alerts disabled */ }
     }
 
-    // Build inputs for tests with non-zero weight
-    console.log('loaded weights', weights);
-    const testsWithWeight = weights.filter(w => w.weight && w.weight > 0);
-    console.log('testsWithWeight', testsWithWeight);
-    if (testsWithWeight.length === 0) {
-        // show a prominent error so the user notices there's nothing to fill
-        showError('לא הוגדרו מבחנים עם משקל > 0 ב-test_weights.csv');
-        // still populate the div so the form remains visible (user can fix file and reload)
-        const p = document.createElement('p');
-        p.textContent = 'לא הוגדרו מבחנים עם משקל > 0 ב-test_weights.csv';
-        testInputsDiv.appendChild(p);
-        return; // stop further setup
-    } else {
-        testsWithWeight.forEach(w => {
-            const fieldMeta = fields.find(f => f.value === w.test_type);
-            const wrapper = document.createElement('div');
-            wrapper.className = 'form-group test-group';
+    function renderTestInputs(selectedGender) {
+    testInputsDiv.innerHTML = ''; // Clear existing inputs
+    
+    // Filter weights for the selected gender
+   // This ensures 'Female' matches 'female' and removes hidden spaces
+const genderValue = genderSelect.value.toLowerCase().trim();
+const activeWeights = allWeights.filter(w => 
+    w.gender.toLowerCase().trim() === genderValue && 
+    w.weight > 0
+);
+    
 
-            const label = document.createElement('label');
-            label.htmlFor = 'test_' + w.test_type;
-            label.textContent = fieldMeta ? fieldMeta.label + ` (${w.weight}% )` : (w.label || w.test_type) + ` (${w.weight}% )`;
-
-            const input = document.createElement('input');
-            input.id = 'test_' + w.test_type;
-            input.name = w.test_type;
-            input.type = 'text';
-            input.dataset.format = fieldMeta ? fieldMeta.input_format : 'count';
-            input.placeholder = fieldMeta ? fieldMeta.description : 'הזן תוצאה';
-
-            const help = document.createElement('div');
-            help.className = 'help-text';
-            help.id = input.id + '_help';
-            help.textContent = '';
-
-            wrapper.appendChild(label);
-            wrapper.appendChild(input);
-            wrapper.appendChild(help);
-            testInputsDiv.appendChild(wrapper);
-
-            // Real-time validation for this input (matches calculator.js behavior)
-            input.addEventListener('input', (e) => {
-                const val = e.target.value.trim();
-                const fmt = e.target.dataset.format || 'count';
-                const helpEl = document.getElementById(e.target.id + '_help');
-
-                // Don't show error on empty input (user might still be typing)
-                if (val === '') {
-                    e.target.classList.remove('invalid');
-                    if (helpEl) helpEl.style.color = '';
-                    return;
-                }
-
-                const validation = validateScoreInput(val, fmt);
-                if (!validation.valid) {
-                    e.target.classList.add('invalid');
-                    if (helpEl) {
-                        helpEl.textContent = validation.message;
-                        helpEl.style.color = '#d32f2f';
-                    }
-                } else {
-                    e.target.classList.remove('invalid');
-                    if (helpEl) {
-                        helpEl.textContent = '';
-                        helpEl.style.color = '#4caf50';
-                    }
-                }
-            });
-        });
+    if (activeWeights.length === 0) {
+        testInputsDiv.innerHTML = '<p>לא הוגדרו מבחנים למגדר זה.</p>';
+        return;
     }
+
+    activeWeights.forEach(w => { 
+        const fieldMeta = fields.find(f => f.value === w.test_type);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'form-group test-group';
+
+        const label = document.createElement('label');
+        label.htmlFor = 'test_' + w.test_type;
+        label.textContent = fieldMeta ? `${fieldMeta.label} (${w.weight}%)` : `${w.label} (${w.weight}%)`;
+
+        const input = document.createElement('input');
+        input.id = 'test_' + w.test_type;
+        input.name = w.test_type;
+        input.type = 'text';
+        input.dataset.format = fieldMeta ? fieldMeta.input_format : 'count';
+        input.placeholder = fieldMeta ? fieldMeta.description : 'הזן תוצאה';
+
+        const help = document.createElement('div');
+        help.className = 'help-text';
+        help.id = input.id + '_help';
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        wrapper.appendChild(help);
+        testInputsDiv.appendChild(wrapper);
+
+        // Keep your existing validation listener here
+        input.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            const fmt = e.target.dataset.format || 'count';
+            const helpEl = document.getElementById(e.target.id + '_help');
+            if (val === '') {
+                e.target.classList.remove('invalid');
+                return;
+            }
+            const validation = validateScoreInput(val, fmt);
+            if (!validation.valid) {
+                e.target.classList.add('invalid');
+                if (helpEl) helpEl.textContent = validation.message;
+            } else {
+                e.target.classList.remove('invalid');
+                if (helpEl) helpEl.textContent = '';
+            }
+        });
+    });
+}
+
+// Listen for gender dropdown change
+    genderSelect.addEventListener('change', (e) => {
+    const val = e.target.value.toLowerCase().trim(); // Add .trim()
+    if (val) {
+        errorDiv.classList.add('hidden');
+        renderTestInputs(val); // Pass the cleaned value
+        resultDiv.classList.add('hidden');
+    }
+});
 
     // Preload score CSVs for quick lookup
     const scoreCache = {};
@@ -203,46 +220,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function computeTestFinalScore(testType, inputValue, inputFormat, grade, gender) {
-        // Convert input to comparable numeric value
-        let studentVal;
-        if (inputFormat === 'time') studentVal = parseTimeToSeconds(inputValue);
-        else studentVal = parseFloat(inputValue);
+    let studentVal;
+    if (inputFormat === 'time') studentVal = parseTimeToSeconds(inputValue);
+    else studentVal = parseFloat(inputValue);
 
-        const rows = await loadScoreFile(testType);
-        if (!rows) {
-            // If no mapping file, return null to indicate cannot compute
-            return null;
-        }
+    const rows = await loadScoreFile(testType);
+    if (!rows) return null;
 
-        // Column name like 'boys_grade9'
-        const colName = `${gender}_grade${grade}`;
+    const colName = `${gender}_grade${grade}`;
 
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            const finalScore = parseInt((row.final_score || row.final_score || Object.values(row)[0]) .toString().trim());
-            let cell = (row[colName] || row[colName] || '').toString().trim();
-            // skip empty or zero entries (treated as gaps)
-            if (!cell || cell === '0') continue;
+    for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const finalScore = parseInt(row.final_score);
+    let cell = (row[colName] || '').toString().trim();
 
-            try {
-                let cellVal;
-                if (inputFormat === 'time') cellVal = parseTimeToSeconds(cell);
-                else cellVal = parseFloat(cell);
+    // 1. SKIP EMPTY CELLS: This prevents the "29 returns 97" error
+    if (cell === '' || cell === null) continue;
 
-                // again, if parsing produced 0 or NaN treat as gap
-                if (cellVal === 0 || isNaN(cellVal)) continue;
+    let cellVal;
+    if (inputFormat === 'time') {
+        cellVal = parseTimeToSeconds(cell);
+    } else {
+        cellVal = parseFloat(cell);
+        // 2. Ignore non-numeric or 0 values for count-based tests
+        if (isNaN(cellVal) || cellVal <= 0) continue;
+    }
 
-                if (inputFormat === 'time' || inputFormat === 'seconds') {
-                    // lower is better -> studentVal <= cellVal means at least this finalScore
-                    if (studentVal <= cellVal) return finalScore;
-                } else {
-                    // higher is better -> studentVal >= cellVal
-                    if (studentVal >= cellVal) return finalScore;
-                }
-            } catch (err) {
-                continue;
-            }
-        }
+    // 3. Evaluation logic (Higher is better for counts/pushups)
+    if (inputFormat === 'time' || inputFormat === 'seconds') {
+        if (studentVal <= cellVal) return finalScore;
+    } else {
+        if (studentVal >= cellVal) return finalScore;
+    }
+}
 
         // If not found, take last row's final_score (worst)
         const last = rows[rows.length - 1];
@@ -250,82 +260,62 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        errorDiv.classList.add('hidden');
-        errorDiv.textContent = '';
+    e.preventDefault();
+    errorDiv.classList.add('hidden');
+    errorDiv.textContent = '';
 
-        const grade = GRADE;
-        const gender = document.getElementById('gender').value;
-        if (!gender) {
-            errorDiv.textContent = 'אנא בחר מגדר';
-            errorDiv.classList.remove('hidden');
+    const gender = genderSelect.value.toLowerCase();
+    if (!gender) {
+        showError('אנא בחר מגדר');
+        return;
+    }
+
+    // 1. Get weights ONLY for the selected gender
+    const activeWeights = allWeights.filter(w => w.gender === gender && w.weight > 0);
+    
+    // 2. Validate that these weights add up to 100
+    const totalWeightCheck = activeWeights.reduce((sum, w) => sum + w.weight, 0);
+    if (Math.abs(totalWeightCheck - 100) > 0.001) {
+        showError(`סכום המשקלים למגדר זה הוא ${totalWeightCheck}%. הוא חייב להיות 100%.`);
+        return;
+    }
+
+    // 3. Collect the inputs and validate values
+    let weightedSum = 0;
+    let totalWeightUsed = 0;
+
+    for (const w of activeWeights) {
+        const inputEl = document.getElementById('test_' + w.test_type);
+        if (!inputEl) continue;
+
+        const val = inputEl.value.trim();
+        const fmt = inputEl.dataset.format || 'count';
+        
+        // Validation check
+        const validation = validateScoreInput(val, fmt);
+        if (!validation.valid) {
+            showError(`שגיאה ב${w.label}: ${validation.message}`);
+            inputEl.classList.add('invalid');
             return;
         }
 
-        // Before we validate inputs, ensure the configured weights add up to 100%
-        const staticTotalWeight = testsWithWeight.reduce((sum, w) => sum + w.weight, 0);
-        if (Math.abs(staticTotalWeight - 100) > 0.001) {
-            showError('סכום המשקלים חייב להיות 100%. עיין ב-test_weights.csv');
-            return;
+        // Calculate individual score
+        const score = await computeTestFinalScore(w.test_type, val, fmt, GRADE, gender);
+        
+        console.log(`Test: ${w.test_type}, Score: ${score}, Weight: ${w.weight}%`);
+
+        if (score !== null) {
+            weightedSum += (score * w.weight);
+            totalWeightUsed += w.weight;
         }
+    }
 
-        // Validate each test input
-        const inputs = testsWithWeight.map(w => {
-            const el = document.getElementById('test_' + w.test_type);
-            return { meta: w, el };
-        });
-
-        for (const item of inputs) {
-            const val = item.el.value || '';
-            const fmt = item.el.dataset.format || 'count';
-            const validation = validateScoreInput(val, fmt);
-            const help = document.getElementById(item.el.id + '_help');
-            if (!validation.valid) {
-                help.textContent = validation.message;
-                help.style.color = '#d32f2f';
-                item.el.classList.add('invalid');
-                showError('אנא תקן שגיאות בקלטים');
-                return;
-            } else {
-                help.textContent = '';
-                help.style.color = '#4caf50';
-                item.el.classList.remove('invalid');
-            }
+        // 4. Final Calculation
+        if (totalWeightUsed > 0) {
+         const finalNumber = Math.floor(weightedSum / totalWeightUsed);
+            finalGradeValue.textContent = finalNumber;
+            resultDiv.classList.remove('hidden');
+         resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-
-        // Compute weighted grade
-        let totalWeight = 0;
-        let weightedSum = 0;
-
-        for (const item of inputs) {
-            const w = item.meta.weight;
-            totalWeight += w;
-            const fmt = item.el.dataset.format || 'count';
-            const val = item.el.value.trim();
-            const finalScore = await computeTestFinalScore(item.meta.test_type, val, fmt, grade, gender);
-            if (finalScore === null) {
-                // Cannot compute for this test; skip and reduce total weight
-                totalWeight -= w;
-                continue;
-            }
-            weightedSum += finalScore * (w / 100);
-        }
-
-        if (totalWeight === 0) {
-            errorDiv.textContent = 'לא ניתן לחשב ציון סופי — אין משקל תקף או חסרים קבצי ציונים.';
-            errorDiv.classList.remove('hidden');
-            return;
-        }
-
-        // We already confirmed the configured weights sum to 100, so totalWeight
-        // should equal 100 unless some tests were skipped due to missing score data.
-        // If totalWeight differs now, we still normalize so the partial set scales
-        // appropriately, but no error is shown (this situation is rare).
-        const normalized = (weightedSum / (totalWeight / 100));
-        const finalNumber = Math.floor(normalized);
-
-        finalGradeValue.textContent = finalNumber;
-        resultDiv.classList.remove('hidden');
-        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 });

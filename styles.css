@@ -24,7 +24,10 @@ header {
     color: #001a4d;
     padding: 2rem 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    min-height: 240px; /* reserve space for top-left logos */
+    position: relative; /* ensure any absolute elements inside remain within header */
 }
+
 
 .logo h1 {
     font-size: 2rem;
@@ -32,17 +35,36 @@ header {
     margin-bottom: 0.5rem;
 }
 
+.logo::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
 .logo .subtitle {
     font-size: 1.1rem;
     font-weight: 300;
     opacity: 0.9;
 }
-img.center {
+a{
+	text-align: center;
+	font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+img.reali {
+    text-align: left;
+	position: absolute;
+	top: 20px;
+	left: 5px;
+    
+}
+img.sport{
+    text-align: left;
 	position: absolute;
 	top: 5px;
-	left: 5px;
+	left: 220px;
 }
-
 
 /* Main Content */
 main {
@@ -142,7 +164,7 @@ main {
     cursor: not-allowed;
     background-color: #e0e0e0;
 }
-
+/* eitan was here */
 /* Result Section */
 .result {
     margin-top: 2rem;
