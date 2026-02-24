@@ -398,41 +398,44 @@ function parseTimeToSeconds(timeString) {
 
 // Compute final score from the new table structure
 function computeFinalScoreFromTable(studentScore, fieldScores, columnName, inputFormat) {
-    const parseBenchmark = (value) => {
+    // Helper to parse benchmark values based on format
+    const parseValue = (val) => {
+        if (!val || val.trim() === "") return null;
         if (inputFormat === 'time') {
-            return parseTimeToSeconds(value);
-        } else {
-            return parseFloat(value);
+            return parseTimeToSeconds(val.trim());
         }
+        return parseFloat(val.trim());
     };
 
     if (!fieldScores[0] || !(columnName in fieldScores[0])) {
         return null;
     }
 
-    const lowerIsBetter = inputFormat === 'time' || inputFormat === 'seconds';
+    // Determine if lower numerical value means a better performance
+    const lowerIsBetter = (inputFormat === 'time' || inputFormat === 'seconds');
 
-    // Loop from top (usually final_score 100) to bottom
+    // We assume the CSV is sorted from high final_score (100) down to low (40)
     for (let i = 0; i < fieldScores.length; i++) {
-    const row = fieldScores[i];
-    // .trim() removes hidden spaces that might be in your CSV
-    const benchmarkValueStr = (row[columnName] || '').trim();
+        const row = fieldScores[i];
+        const benchmarkValue = parseValue(row[columnName]);
+        const finalScore = parseInt(row.final_score);
 
-    // IMPORTANT: If the cell is empty, skip to the next row (Score 96, 95, etc.)
-    if (benchmarkValueStr === "" || benchmarkValueStr === null) {
-        continue; 
+        if (benchmarkValue === null) continue;
+
+        if (lowerIsBetter) {
+            // For running: If your time is LESS than or equal to the benchmark
+            if (studentScore <= benchmarkValue) {
+                return finalScore;
+            }
+        } else {
+            // For pushups: If your count is GREATER than or equal to the benchmark
+            if (studentScore >= benchmarkValue) {
+                return finalScore;
+            }
+        }
     }
 
-    let benchmarkValue = parseFloat(benchmarkValueStr);
-    const finalScore = parseInt(row.final_score);
-
-    // For pushups/pullups (Higher is better)
-    if (studentScore >= benchmarkValue) {
-        return finalScore; // It should stop at 98 if studentScore is 29
-    }
-}
-
-    // Fallback if the student didn't meet even the lowest requirement
+    // Fallback if the student didn't meet even the lowest requirement in the table
     return 40; 
 }
 

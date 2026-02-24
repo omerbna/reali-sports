@@ -18,6 +18,13 @@ body {
     padding: 0 20px;
 }
 
+header .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* ממורכז אופקית */
+    text-align: center;    /* ממורכז טקסט */
+}
+
 /* Header */
 header {
     background-color: white;
@@ -52,18 +59,28 @@ a{
     font-weight: 700;
     margin-bottom: 0.5rem;
 }
-img.reali {
-    text-align: left;
-	position: absolute;
-	top: 20px;
-	left: 5px;
-    
+img .reali {
+	max-width: 150px;
+    height: auto;    
 }
-img.sport{
-    text-align: left;
-	position: absolute;
-	top: 5px;
-	left: 220px;
+img .sport{
+    max-width: 150px;
+    height: auto;
+}
+.logo-images {
+    display: flex;
+    justify-content: center; /* ממורכז הלוגואים */
+    gap: 0;        
+}
+
+.logo-images img {
+    display: block;
+    max-width: 150px;
+    height: auto;    
+}
+
+.logo-images img {
+    display: block;
 }
 
 /* Main Content */
@@ -257,6 +274,14 @@ footer p {
 @media (max-width: 768px) {
     .logo h1 {
         font-size: 1.5rem;
+    }
+	
+    .reali {
+        max-width: 110px;
+    }
+	
+	.sport {
+        max-width: 110px;
     }
 
     .calculator-card {
