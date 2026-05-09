@@ -229,35 +229,51 @@ const activeWeights = allWeights.filter(w =>
 
     const colName = `${gender}_grade${grade}`;
 
-    for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    const finalScore = parseInt(row.final_score);
-    let cell = (row[colName] || '').toString().trim();
-
-    // 1. SKIP EMPTY CELLS: This prevents the "29 returns 97" error
-    if (cell === '' || cell === null) continue;
-
-    let cellVal;
-    if (inputFormat === 'time') {
-        cellVal = parseTimeToSeconds(cell);
-    } else {
-        cellVal = parseFloat(cell);
-        // 2. Ignore non-numeric or 0 values for count-based tests
-        if (isNaN(cellVal) || cellVal <= 0) continue;
-    }
-
-    // 3. Evaluation logic (Higher is better for counts/pushups)
     if (inputFormat === 'time' || inputFormat === 'seconds') {
-        if (studentVal <= cellVal) return finalScore;
-    } else {
-        if (studentVal >= cellVal) return finalScore;
-    }
-}
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const finalScore = parseInt(row.final_score);
+            let cell = (row[colName] || '').toString().trim();
 
-        // If not found, take last row's final_score (worst)
-        const last = rows[rows.length - 1];
-        return last ? parseInt(last.final_score) : null;
+            if (cell === '' || cell === null) continue;
+
+            let cellVal;
+            if (inputFormat === 'time') {
+                cellVal = parseTimeToSeconds(cell);
+            } else {
+                cellVal = parseFloat(cell);
+                if (isNaN(cellVal) || cellVal <= 0) continue;
+            }
+
+            if (studentVal <= cellVal) return finalScore;
+        }
+    } else {
+        // For decimal/count, collect all candidates where studentVal >= cellVal, then return the one with highest cellVal
+        let candidates = [];
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const finalScore = parseInt(row.final_score);
+            let cell = (row[colName] || '').toString().trim();
+
+            if (cell === '' || cell === null) continue;
+
+            let cellVal = parseFloat(cell);
+            if (isNaN(cellVal) || cellVal <= 0) continue;
+
+            if (studentVal >= cellVal) {
+                candidates.push({finalScore, cellVal});
+            }
+        }
+        if (candidates.length > 0) {
+            candidates.sort((a, b) => b.cellVal - a.cellVal);
+            return candidates[0].finalScore;
+        }
     }
+
+    // If not found, take last row's final_score (worst)
+    const last = rows[rows.length - 1];
+    return last ? parseInt(last.final_score) : null;
+}
 
     form.addEventListener('submit', async (e) => {
     e.preventDefault();
